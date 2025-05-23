@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <meta charset="utf-8"/>
+        <title>Multirobot Simulator</title>
+        <style>
+
+          body {
+            background: white;
+          }
+
+          h1 {
+            text-align: center;
+            font-family: baskerville;
+            color: #323232;
+            font-weight:normal;
+            font-size:40px;
+          }
+
+          #simulator_title {         
+            text-align: center;
+            font-family: helvetica;
+            color: #323232;
+            font-weight:normal;
+            font-size:70px;
+          }
+
+          #sim_table{
+            margin-left: auto;
+            margin-right: auto;
+            width: 10%;
+            border: 1px solid black;
+            border-collapse:collapse;
+            table-layout: fixed;
+          }
+
+          .width-variable {
+            border: 1px solid white;
+            border-right: 1px solid white;
+            overflow: hidden;
+            width: auto;
+            background: red;
+            white-space: nowrap;
+          }
+
+          .width-fixed {
+            border: 1px solid #323232;
+            overflow: hidden;
+            width: 40px;
+            height: 40px;
+            background: white;
+            font-family: helvetica;
+            font-weight: bold;
+            font-size:24px;
+            color: black;
+          }
+
+          .margin-bottom {
+            border: 1px solid white;
+            text-align: center;
+            background: white;
+            font-weight: normal;
+          }
+
+          .margin-left {
+            border: 1px solid white;
+            border-right: 1px solid #323232;
+            text-align: center;
+            background: white;
+            font-weight: normal;
+          }
+
+          .grid-cell {
+            text-align: center;
+          }
+
+          .origin-cell-variable {
+            border: 1px solid white;
+            border-right: 1px solid white;
+          }
+
+          .origin-cell-fixed {
+            border: 1px solid white;
+            border-bottom: 1px solid white;
+          }
+
+          #legend_table{
+            margin-left: auto;
+            margin-right: auto;
+            border: 1px solid black;
+            border-collapse:collapse;
+            table-layout: fixed;
+          }
+
+          .legend_label {
+            border: 1px solid #323232;
+            overflow: hidden;
+            background: white;
+            font-family: helvetica;
+            font-weight: normal;
+            font-size:25px;
+            color: black;
+          }
+
+          #stat_para {         
+            text-align: center;
+            font-family: helvetica;
+            color: #323232;
+            font-weight:normal;
+            font-size:45px;
+          }
+
+          #time{
+            margin-left: auto;
+            margin-right: auto;
+            width: 40%;
+          }
+
+          #state{
+            margin-left: auto;
+            margin-right: auto;
+            width: 40%;
+          }
+
+          .state_column {
+            float: left;
+            width: 33.3%;
+          }
+
+    </style>
+    </head>
+
+    <body>
+      <div>
+      <p id = "simulator_title">Multirobot Simulator</p>
+      <table id = "sim_table"></table>
+      <table id = "legend_table"></table>
+      <div   id = "time_and_rate"></div>
+      </div>
+      
+    </body>
+
+    <script type = "text/javascript">
+
+      // Builds basic table
+      function build_table(nrows, ncols){
+        
+        // Table to visualize workspace with
+        var table = document.getElementById("sim_table");
+        delete_children(table.innerHTML);
+
+        // 2D array to access and modify table cells
+        var cells = new Array(nrows);
+
+        for (var rr=0; rr<nrows+1; rr++) {
+
+          var x=table.insertRow(rr);
+
+          // Add buffer cell to keep remaining cells fixed width
+          var y = x.insertCell(0);
+          y.classList.add('width-variable');
+
+          // If regular row
+          if (rr < nrows) {
+
+            // Add array to store row's grid cells
+            cells[nrows-rr-1] = new Array(ncols);
+
+            // Add regular grid cells
+            for(var cc=1; cc<ncols+1; cc++) {
+              var y = x.insertCell(cc);
+              y.classList.add('width-fixed');
+              y.classList.add('grid-cell');
+              cells[nrows-rr-1][cc-1] = y;
+              // y.id = coords_to_coordstr(cc-1, nrows-r-1);
+              // y.innerHTML = coords_to_coordstr(c-1, nrows-r-1);
+            }
+
+            // Add margin cell (to contain x-axis value)
+            var y = x.insertCell(1);
+            y.classList.add('width-fixed');
+            y.classList.add('margin-left');
+            y.innerHTML = nrows-rr-1;
+
+          // If x-axis margin row (contains x-axis values)
+          } else {
+
+            // Black out right hand border from buffer cell
+            y.classList.add('origin-cell-variable');
+
+            // Add margin cell (to contain y-axis value)
+            for(var cc=1; cc<ncols+1; cc++) {
+              var y = x.insertCell(cc);
+              y.classList.add('width-fixed');
+              y.classList.add('margin-bottom')
+              y.innerHTML = (cc-1);
+            }
+
+            // Add origin cell
+            var y = x.insertCell(1);
+            y.classList.add('width-fixed');
+            y.classList.add('origin-cell-fixed');
+            y.innerHTML = "";
+          }
+        } // for var r=0...
+
+        console.log("built table");
+        return cells;
+
+      } // end build_table
+
+
+      function build_cargo_table(num_agents){
+
+        // Compute the number of rows and columns
+        ncols = 6;
+        nrows = ceil(num_agents / ncols / 2);
+
+        // Generate table
+        cargo_table = document.getElementById("legend_table"); // Table body
+        cargo_cells = new Array(nrows);                        // 2D array to access table cells
+
+        for (var rr = 0; rr < nrows; rr++) {
+
+          console.log("rr is", rr)
+
+          // Add row to table
+          var x             = cargo_table.insertRow(rr);               
+          // Add row to array to access cargo_table's grid cells
+          cargo_cells[nrows-rr-1] = new Array(ncols);           
+
+          for(var cc = 0; cc < ncols; cc++) {
+
+            var y                    = x.insertCell(cc);
+            cargo_cells[nrows-rr-1][cc]  = y;
+
+            if (cc % 2 == 0) {
+              y.classList.add('width-fixed');
+              y.classList.add('grid-cell');
+            } else {
+              y.classList.add('legend_label');
+            }
+          }
+        }
+
+        return cargo_cells
+      } // End build cargo table
+
+
+    function fill_cargo_table(cargo) {
+      
+      // Fill table
+      rr = 0;
+      cc = 0;
+
+      for (const [agent_id, agent_cargo] of Object.entries(cargo)) {
+
+        agent_id_display_cell    = cargo_cells[nrows-rr-1][cc];
+        cargo_display_cell       = cargo_cells[nrows-rr-1][cc+1];
+
+        delete_children(agent_id_display_cell);
+        add_text(agent_id_display_cell, "a" + agent_id);
+
+        delete_children(cargo_display_cell);
+
+        if (Object.entries(agent_cargo).length == 0) {
+          add_text(cargo_display_cell, "no cargo");
+        
+        } else {
+          for (const [token_name, quantity] of Object.entries(agent_cargo)) {
+            add_text(cargo_display_cell, token_name + ":" + quantity + " ")
+          }
+        }
+        
+        rr += 1;
+        if (rr >= nrows) {
+          rr = 0;
+          cc += 2;
+        }
+      }
+
+      } // end fill_cargo_table
+
+      // Ceiling function
+      function ceil(num) {
+        var floor = num | 0;
+        return num > floor ? floor + 1 : floor;
+      }
+  
+      // Removes all children from node in DOM
+      function delete_children(element) {
+        while (element.firstChild) {
+          element.removeChild(element.lastChild);
+        }
+      }
+
+      // Draws the value of each cell onto the map
+      function draw_map() {
+        
+        // Cell color scheme
+        empty_color       = "#ffffff";
+        input_color       = "#d6f2f5";
+        output_color      = "#fff3bb"; 
+        machine_color     = "#d5d5d5";
+        workstation_color = "#ffe0a0"
+        road_color        = "#decceb";
+        junction_color    = "#eefff2";
+        unknown_color     = "#ffdeb3";
+        agent_color       = "#bbddaa"
+        let cell_type     = null;       // The type of the current cell
+        let cell          = null;       // The current cell
+
+        // Row 0 is stored at the bottom of the warehouse map, row w.h-1 at the top.
+        for (let rr = 0; rr < cells.length; rr++) {
+          for (let cc = 0; cc < cells[rr].length; cc++) {
+
+            cell_type       = my_map[cells.length-rr-1][cc];
+            cell            = cells[rr][cc];
+            delete_children(cell);
+
+            switch (cell_type) {
+
+              // Empty space cells are white
+              case ".":
+                cell.style.backgroundColor = empty_color;
+                break;
+
+              // Machine cells are grey
+              case "#":
+                cell.style.backgroundColor = machine_color;
+                break;
+
+              // Workstation cells are red
+              case "t":
+                cell.style.backgroundColor = workstation_color;
+                break
+
+              // A road cell, "n/e/w/s", contains a downwards
+              // upwards/leftwards/rightwards arrow and is purple.
+              case "n":
+              case "e":
+              case "w":
+              case "s":
+                cell.style.backgroundColor = road_color;
+                add_text(cell, direction_to_arrow.get(cell_type));
+                break;
+
+              // A junction cell, "!", contains an exclam and is light green.
+              case "!":
+                cell.style.backgroundColor = junction_color;
+                add_text(cell, cell_type);
+                break;
+
+              // Otherwise, cells is unknown. Set its background color
+              // to light organe, and label it with its column number.
+              default:
+                cell.style.backgroundColor = unknown_color;
+                add_text(cell, cc);
+
+            } // Switch statement
+          } // For each column in a row in the warehouse map
+        } // For each row in the warehouse map
+
+        
+        // Add annotations to map
+        add_annotation(installation_input,  input_color);
+        add_annotation(installation_output, output_color);
+        add_annotation(installation_label,  null);
+        
+      } // function
+
+
+      // Adds text to a cell
+      function add_text(cell, text) {
+        cell.appendChild(document.createTextNode(text));
+      }
+
+
+      // Adds an annotation to the map
+      function add_annotation(annotation, color) {
+        for (const [i_id, pt] of Object.entries(annotation)) {
+          cc   = pt[0]
+          rr   = pt[1]
+          cell = cells[rr][cc]
+          add_text(cell, i_id);
+          if (color != null) {
+            cell.style.backgroundColor = color;
+          }
+        }
+      }
+
+
+      function update_display(response) {
+        draw_map(my_map, cells);
+        draw_agents(response.pos, response.cargo);
+        fill_cargo_table(response.cargo);
+        // draw_tokens(response.plan, response.token_to_color, response.token_to_symbol, cells);
+        // build_legend(response.token_to_color, response.token_to_symbol);
+      }
+
+      
+      // Draws each token in the smart factory
+      function draw_agents(pos, cargo) {
+
+        let cc = null, rr = null;
+
+        for (const [agent_id, pt] of Object.entries(pos)) {
+          
+          cc    = pt[0];
+          rr    = pt[1];
+          cell  = cells[rr][cc];
+
+          delete_children(cell);
+
+          // token = has[agent_id];
+
+          cell.style.backgroundColor = agent_color;
+          add_text(cells[rr][cc], "a" + agent_id);
+
+        } 
+      } 
+
+      function add_time(t, timesteps) {
+        let div = document.getElementById("time_and_rate");
+        delete_children(div);
+        div.appendChild(document.createTextNode("Time: " + t + "/" + timesteps));
+      }
+
+
+      // Map directions (n, e, w, s) to arrows
+      const direction_to_arrow = new Map([['n', '\u2191'], ['N', '\u2191'], ['u', '\u2191'],
+                                          ['e', '\u2192'], ['E', '\u2192'], ['r', '\u2192'],
+                                          ['w', '\u2190'], ['W', '\u2190'], ['l', '\u2190'],
+                                          ['s', '\u2193'], ['S', '\u2193'], ['d', '\u2193']]);
+
+
+      var my_map               = null;                   // The global map
+      var cells                = null;                   // The cells in the display
+      var cargo_table          = null;                   // Table for displaying agent cargo
+      var cargo_cells          = null;                   // The cells in the cargo table 
+      var installation_input   = null;                   // iid -> installation input cell
+      var installation_output  = null;                   // iid -> installation output cell
+      var installation_label   = null;                   // iid -> installation label cell
+
+      var fmap_f    = "tmp/map.json";                    // The global map file
+      var state_f   = "tmp/state.json";                  // The state file
+
+      // Get updated warehouse state from simulator
+      var request         = new XMLHttpRequest();
+      var req_returned    = true;
+
+      request.onload = function() {
+
+        if (this.readyState == 4) {
+          req_returned         = true;
+
+          if(this.status == 200) {
+            //console.log(this.responseText);
+            let response           = JSON.parse(this.responseText);
+            console.log(response);
+            
+            // If response contains map, response is vis_gmap. If gmap has not
+            // already been received, save gmap, build table.
+            if ("map" in response && cells == null) {
+              my_map              = response.map;
+              installation_input  = response.installation_input;
+              installation_output = response.installation_output;
+              installation_label  = response.installation_label;
+              num_agents          = response.num_agents;
+              nrows               = my_map.length;
+              ncols               = my_map[0].length;
+              cells               = build_table(nrows, ncols);
+              cargo_cells         = build_cargo_table(num_agents);
+              draw_map();
+
+            // If response contains agents, response is state. Update display
+            // with new shard system state.
+            } else {
+              console.log(response);
+              update_display(response);
+            }
+          } 
+        }
+      };
+
+      request.onerror = function(e) {
+        req_returned  = true;
+      }
+
+      // If we haven't loaded the workspace map yet (wmap == null), request 
+      // vis_map.json, get the map's dimensions, and build the display table.
+      // Otherwise, request vis_agents.json and update the display table with
+      // the workspace's current state.
+      setInterval(function(){
+        var target_file = (my_map == null ? fmap_f : state_f);
+        if(req_returned){
+          request.open('GET', target_file, true); //true makes request async
+          req_returned  = false; 
+          request.send();
+        }
+      }, 50); // rate limit here (timer in milliseconds)
+
+    </script>
+</html>

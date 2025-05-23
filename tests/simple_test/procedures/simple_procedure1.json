@@ -1,0 +1,37 @@
+{
+  "id"             : "simple_procedure1",
+  "tokens"         : ["A", "B", "C", "D"],
+  "output_process" : "eat_D",
+  "processes"      : [
+    {
+      "id"      : "make_A",
+      "inputs"  : {},
+      "outputs" : {"A": 1},
+      "runtime" : 1
+    },
+    {
+      "id"      : "A_to_B",
+      "inputs"  : {"A": 1},
+      "outputs" : {"B": 1},
+      "runtime" : 1
+    },
+    {
+      "id"      : "B_to_C",
+      "inputs"  : {"B": 1},
+      "outputs" : {"C": 1},
+      "runtime" : 1
+    },
+    {
+      "id"      : "C_to_D",
+      "inputs"  : {"C": 1},
+      "outputs" : {"D": 1},
+      "runtime" : 1
+    },
+    {
+      "id"      : "eat_D",
+      "inputs"  : {"D": 1},
+      "outputs" : {},
+      "runtime" : 1
+    }
+  ]
+}

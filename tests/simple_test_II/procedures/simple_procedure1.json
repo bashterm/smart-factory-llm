@@ -1,0 +1,43 @@
+{
+  "id"             : "make_toy_car",
+  "tokens"         : ["plank", "axel", "chassis", "wheel", "car"],
+  "output_process" : "deposit_car",
+  "processes"      : [
+    {
+      "id"      : "retrieve_plank",
+      "inputs"  : {},
+      "outputs" : {"plank": 2},
+      "runtime" : 1
+    },
+    {
+      "id"      : "retrieve_axel",
+      "inputs"  : {},
+      "outputs" : {"axel": 8},
+      "runtime" : 1
+    },
+    {
+      "id"      : "carve_chassis",
+      "inputs"  : {"plank": 1},
+      "outputs" : {"chassis": 1},
+      "runtime" : 1
+    },
+    {
+      "id"      : "carve_wheels",
+      "inputs"  : {"plank": 1},
+      "outputs" : {"wheel": 4},
+      "runtime" : 1
+    },
+    {
+      "id"      : "assemble_car",
+      "inputs"  : {"plank": 1, "wheel": 4, "axel":2},
+      "outputs" : {"car": 1},
+      "runtime" : 1
+    },
+    {
+      "id"      : "deposit_car",
+      "inputs"  : {"car": 1},
+      "outputs" : {},
+      "runtime" : 1
+    }
+  ]
+}

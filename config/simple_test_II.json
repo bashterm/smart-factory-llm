@@ -1,0 +1,11 @@
+{
+  "machines_path":    "tests/simple_test_II/machines.json", 
+  "map_path":         "tests/simple_test_II/map.txt",
+  "procedure_paths":  ["tests/simple_test_II/procedures/simple_procedure1.json"],
+  "vis_html":         "visualizer/visualizer/static/vis.html",
+  "vis_lock_timeout": 2,
+  "vis_map":          "tmp/map.json",
+  "vis_state":        "tmp/state.json",
+  "vis_state_lock":   "tmp/state_lock.lock",
+  "plan_path":        "tmp/plan.json"
+}

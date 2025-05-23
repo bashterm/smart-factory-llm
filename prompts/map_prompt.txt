@@ -1,0 +1,24 @@
+[SECTION 1: TRAFFIC SYSTEM GRAPH DEFINITION]
+-- Junctions: A list of 2D points. Each junction is a tuple (x,y).
+-- Roads: A list of directed edges. Each road is an ordered pair of junctions ((x_from, y_from), (x_to, y_to)) indicating that there is an edge from the junction (x_from, y_from) to the junction (x_to, y_to).
+-- Houses: A mapping of unique home identifiers (e.g. H1, H2) to raods. Each home is accessed exclusively through its associated road.
+
+[SECTION 2: PATH REQUEST]
+-- You will be given an ordered pair of home identifiers (H_start, H_goal). Your job is to compute a valid path from the start home H_start to the goal home H_goal. 
+-- Interpret H_start as being located at its road's end junction.
+-- Interpret H_goal as being located at its road's start junction.
+-- Path Length Consideration: Return the shortest valid path that you can find. Prioritize validity over minimizing length.
+
+[SECTION 3: OUTPUT]
+-- Return the path from H_start to H_goal as an ordered list of junctions.
+-- Format the output [(x1, y1), (x2, y2), ...]
+-- State your reasoning explicitly before outputting the path.
+
+[SECTION 4: MAP] 
+-- Every path request will reference the following predefined map:
+-- Junctions: [(0, 0), (0, 1) (0, 2), (0, 3), (1, 0), (1, 1), (1, 2), (1, 3)]
+-- Roads: [((0, 0), (1, 0)), ((1, 0), (1, 1)), ((1, 1), (1, 2)), ((1, 2), (1, 3)), ((1, 3), (0, 3)), ((0, 3), (0, 2)), ((0, 2), (0, 1)), ((0, 1), (0, 0)), ((1, 1), (1, 0)), ((2, 0), (2, 1))]
+-- Houses: {A : ((0, 0), (1, 0)), B : ((1, 2), (1, 3)), C : ((0, 2), (0, 1)), D: ((2, 0), (2, 1))}
+
+[SECTION 5: PATH REQUEST INSTANCES]
+-- Path request instances follow this sentence
