@@ -1,4 +1,5 @@
 import json
+import lib.path_planner   as path_planner
 import lib.process_status as process_status
 import lib.run_factory    as run_factory
 import lib.scenario       as scenario
@@ -13,11 +14,16 @@ from collections import Counter
 from lib.map                import Map
 # from lib.build_traffic_plan import BuildTrafficPlan
 
+# interpreter = workstation_interpreter.InterpreterGamma(["gpt-4o", "gpt-4o", "gpt-4o", "gpt-4o"])
+# interpreter.main()
+# sys.exit()
+
 # (1) Load Config
 config_path = "config/simple_test_II.json"
 
 with open(config_path) as file:
   config = json.loads(file.read())
+
 
 # (2) Load Factory and Procedures
 procedures = [scenario.Procedure(filepath) for filepath in config["procedure_paths"]]
@@ -27,12 +33,28 @@ installations = scenario.Installations(config["machines_path"])
 installations.print_installations()
 
 factory_map = Map(config["map_path"], installations)
-factory_map.visualize()
+# factory_map.visualize()
 vis = visualizer.Visualizer(factory_map, installations, 1)
 
 agents = [run_factory.Agent(1, util.Pt(0,2))]
 agents[0].add_cargo(Counter({"plank":2, "chassis":1}))
 vis.generate_state(agents)
+
+
+condition1 = ("There is an oil spill in the center of the factory. "
+              "Please use roads which hug the factory outskirts.")
+
+condition2 = ("The road (6,7)->(6,1) is blocked by a broken down robot.")
+
+factory_map.add_condition(condition1)
+factory_map.add_condition(condition2)
+
+pplanner = path_planner.PathPlanner(
+  proposer_models   = ["gpt-4o", "gpt-4o"], 
+  aggregator_models = ["gpt-4o", "gpt-4o"])
+
+
+pplanner.plan_junction_path(factory_map, util.Pt(0,5), util.Pt(1,1))
 
 sys.exit()
 
@@ -64,7 +86,7 @@ to_run = Counter({
 status = process_status.ProcessStatus(procedures, to_run)
 status.print_process_status()
 
-interpreter = workstation_interpreter.InterpreterGamma(["gpt-4o", "gpt-4o", "gpt-4o", "gpt-4o"])
+interpreter = workstation_interpreter.Interpreter(["gpt-4o", "gpt-4o", "gpt-4o", "gpt-4o"])
 interpreter.main()
 
 # interpreter = workstation_interpreter.Interpreter(status, ["gpt-4o","gpt-4o","gpt-4o","gpt-4o"], 0.75)

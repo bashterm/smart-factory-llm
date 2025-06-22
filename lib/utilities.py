@@ -1,6 +1,7 @@
 import matplotlib.pyplot   as     plt
 
 from   collections         import namedtuple
+from   concurrent.futures  import ThreadPoolExecutor
 from   matplotlib          import transforms
 from   openai              import OpenAI
 from   typing              import List
@@ -26,7 +27,7 @@ class Pt:
     return self.x == cell.x and self.y == cell.y
 
   def __repr__(self):
-    return f"{self.x},{self.y}"
+    return f"({self.x},{self.y})"
 
 
 # Cardinal directions
@@ -63,6 +64,16 @@ def rainbow_text(x, y, ls, lc, fig, t, **kw):
     t = transforms.offset_copy(text._transform, x=ex.width, units='dots')
 
 
+# A message in a trace
+class Message:
+  def __init__(self, role, content):
+    self.role:    str = role
+    self.content: str = content
+
+  def __repr__(self):
+    return f"{self.role}: {self.content}"
+
+
 # Interface to an LLM
 class LLMInterface:
 
@@ -71,14 +82,51 @@ class LLMInterface:
     self.model           = model
     self.response_format = response_format
 
-  # evaluate_prompt: asks the client LLM to evaluate a prompt
-  def evaluate_prompt(self, trace):
+  # evaluate_trace: asks the client LLM to evaluate a trace
+  def evaluate_trace(self, trace):
     completion  = self.client.beta.chat.completions.parse(
       model           = self.model,
       messages        = trace,
       response_format = self.response_format)
 
     return completion.choices[0].message
+
+# Interface to an ensemble of LLMs
+class EnsembleInterface:
+
+  def __init__(self, models, response_format):
+    self.llms = [LLMInterface(model, response_format) for model in models]
+
+  def evaluate_traces(self, traces):
+    with ThreadPoolExecutor(max_workers=len(self.llms)) as executor:
+      futures   = [executor.submit(llm.evaluate_trace, trace) 
+                   for llm, trace in zip(self.llms, traces)]
+      responses = [future.result() for future in futures]
+      return responses
+
+
+# Interface to an ensemble of LLMs
+class ScalingEnsembleInterface:
+
+  def __init__(self, model, response_format):
+    self.model           = model
+    self.response_format = response_format
+
+  def evaluate_traces(self, id_to_trace):
+    
+    id_to_llm = {trace_id: LLMInterface(self.model, self.response_format) 
+                 for trace_id in id_to_trace}
+
+    with ThreadPoolExecutor(max_workers=len(id_to_llm)) as executor:
+
+      id_to_future   = {trace_id : executor.submit(llm.evaluate_trace, id_to_trace[trace_id]) 
+                        for trace_id, llm in id_to_llm.items()}
+
+      id_to_response = {trace_id : future.result() for trace_id, future in id_to_future.items()}
+
+      return id_to_response
+
+
 
 
 colors = ['deepskyblue', 'salmon', 'cyan', 'dodgerblue', 'yellow','sandybrown', 

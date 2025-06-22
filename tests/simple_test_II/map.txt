@@ -1,9 +1,9 @@
 ..###...###..
 !Eeeee!Eeeee!
-n..p..S..p..n
-n.....sp....n
-n#....sp...#n
-n.....s.....n
-N#.p..s..p..N
+n..p..S..p..S
+n.....sp....s
+n#....sp...#s
+n.....s.....s
+N#.p..s..p..s
 !wwwwW!wwwwW!
 ..ttt...ttt..

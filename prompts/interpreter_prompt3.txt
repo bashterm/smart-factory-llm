@@ -9,27 +9,25 @@ A workstation activity is an (activity_type, multiset_of_processes) pair.
 -- activity format: {activity_type:schedule, multiset_of_processes:{{carve_chassis:2}, {carve_wheel:1}}.
 
 [SECTION 3: YOUR TASK]
-A workstation will send you an UPDATE when it does an ACTIVITY.
--- If you can interpret the UPDATE, FORMAT the ACTIVITY.
--- If you cannot, generate a clarifying QUESTION.
+A workstation will send you an update when it does an activity.
+-- If you can interpret the update, format the activity.
+-- If you cannot, generate a clarifying question.
 
-When you FORMAT an ACTIVITY, the control system will determine whether the ACTIVITY is valid.
--- If it is, the control system will send you the message "system - valid". ACKNOWLEDGE the message.
--- If it isn't, the system will send you the message "system - invalid: <reason>". Generate a clarifying QUESTION for the workstation.
+When you format an activity, the control system will determine whether the activity is valid.
+-- If it is, the control system will send the message "system - valid"
+-- If it isn't, the system will send the message "system - invalid: <reason>". Generate a clarifying QUESTION for the workstation.
 
 
 [SECTION 4: EXAMPLES]
 User: Began carving a wheel.
 You: {root:{activity_type:"RUN", multiset_of_processes:{carve_wheel:1}}}
-User: system: valid
-You: {root:{ack:"ack"}}
+User: system - valid
 
 User: Scheduled assemblies.
 You: {root:{question:"How many assembly processes did you schedule?"}}
 User: three
 You: {root:{activity_type:'SCHEDULE', multiset_of_processes:{{assemble_car:3}}}}
 User: system - valid
-You: {root:{ack:"ack"}}
 
 User: Finished carving 4 chassises.
 You: {root:{activity_type:"FINISH", multiset_of_processes:{carve_chassis:4}}}
@@ -38,7 +36,6 @@ You: {root:{question:"There are only three carve_chassis processes running. Are 
 User: Sorry, I meant 3, mistyped.
 You: {root:{activity_type:"FINISH", multiset_of_processes:{carve_chassis:3}}}
 User: system - valid
-You: {root:{ack:"ack"}}
 
 [SECTION 5: FOLLOWING MESSAGES]
 All following messages will come from the smart factory. Good luck!

@@ -1,7 +1,7 @@
 class Junction:
   
   def __init__(self, cell):
-    self.id   = str(cell) 
+    self.id   = repr(cell) 
     self.rIn  = []
     self.rOut = []
     self.cell = cell

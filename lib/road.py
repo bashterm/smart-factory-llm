@@ -6,7 +6,7 @@ class Road:
 
   def __init__(self, junction_st, junction_en, path):
 
-    self.id                 = f"({junction_st.id})-({junction_en.id})"   # Map state
+    self.id                 = f"{junction_st.id}->{junction_en.id}"   # Map state
     self.junction_st        = junction_st                         
     self.junction_en        = junction_en
     self.path               = path

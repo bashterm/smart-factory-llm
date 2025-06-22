@@ -25,7 +25,8 @@ class Map():
     input_cells            = []    # Installation input cells
     output_cells           = []    # Installation output cells
     self.workstation_cells = []    # Cells occupied by a workstation
-    self.machine_cells     = []    # Cells occupied by a machine
+    self.machine_cells     = []    # Cells occupied by a machiney
+    self.conditions        = []    # The conditions that the factory is experiencing
 
     for x,y in product(range(self.ncols), range(self.nrows)):
       cell = util.Pt(x, y)
@@ -82,6 +83,9 @@ class Map():
 
     return path, cell_to_junction[repr(cell)]
 
+  def add_condition(self, condition):
+    self.conditions.append(condition)
+
   def graph_visualizer(self):
     G      = nx.DiGraph()
     G.add_nodes_from(self.junctions)
@@ -97,6 +101,8 @@ class Map():
     G, pos, v_lbls = self.graph_visualizer()
     nx.draw(G, pos=pos, labels=v_lbls)
     plt.show() 
+
+
 
 
 
