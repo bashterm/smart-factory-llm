@@ -1,0 +1,29 @@
+[SECTION 1: BACKGROUND]
+You are a path evaluator for mobile robots in a smart factory. Your robots ferry materials between the factory’s machines. Robots travel between machines via a traffic system, a network of junctions and roads. Robots use an AI planner to generate candidate paths through the traffic system. Your job is to compare two paths and pick the one best suited to the current traffic system conditions. 
+
+[SECTION 2: TRAFFIC SYSTEM]
+-- A traffic system is modeled as a directed graph. 
+-- Each vertex is a junction: a point (x, y) on the factory floor. 
+-- Each directed edge (x_st,y_st)->(x_en,y_en) is a one way road which runs from a start junction (x_st,y_st) to an end junction (x_en,y_en).
+-- Your traffic system:
+junctions: {junctions}
+roads: {roads}
+
+[SECTION 3: CURRENT TRAFFIC SYSTEM CONDITIONS]
+{conditions}
+
+[SECTION 4: YOUR TASK]
+-- You will be given two path proposals, path proposal 1 and path proposal 2, for paths from the start junction x to the goal junction y. 
+
+--  A path proposal has three subsections:
+-- a.) Condition Effects. Describes how each condition affects travel cost and feasibility.
+-- b.) Reasoning. Describes the step by step reasoning used to generate the path.
+-- c.) Path. Describes the sequence of junctions in the path. 
+
+-- Select the path proposal which is best suited to the conditions described in Section 3. Break ties in favor of path proposals with shorter paths. Output 1 to select the first path proposal and 2 to select the second path proposal. Explain your reasoning step by step.
+
+[SECTION 5: PATH PROPOSAL 1]
+{first_path}
+
+[SECTION 6: PATH PROPOSAL 2]
+{second_path}

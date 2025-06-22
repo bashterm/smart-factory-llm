@@ -1,6 +1,7 @@
 import lib.utilities as util
 
-from itertools       import product
+from collections     import defaultdict
+from itertools       import combinations, product
 from pydantic        import BaseModel
 from typing          import List, Literal, Optional, Tuple, Union
 
@@ -87,6 +88,18 @@ class ConditionScore(BaseModel):
       print(f"Step {i+1}: {reasoning_step.reasoning}")
     print(f"[SCORE]\n{self.score}")
 
+
+# Condition Score Format
+class PathSelection(BaseModel):
+  reasoning_steps: List[ReasoningStep]
+  selected_path: int
+
+  def print_path_selection(self):
+    print(f"[REASONING]")
+    for i, reasoning_step in enumerate(self.reasoning_steps): 
+      print(f"Step {i+1}: {reasoning_step.reasoning}")
+    print(f"[SELECTED PATH]\n{self.selected_path}")
+
 class PathPlanner:
 
   def __init__(self, proposer_models, aggregator_models):
@@ -118,21 +131,22 @@ class PathPlanner:
     
     # Proposers: Generate a series of paths between the start and the goal junctions
     paths = self.propose_paths(factory_map, start_junction, goal_junction)
-    self.print_paths(paths)
-    input("proposers finished")
+    # self.print_paths(paths)
+    # input("proposers finished")
 
     # Aggregators: Synthesize the proposer's path proposals
     paths = self.aggregate_paths(factory_map, start_junction, goal_junction, paths)
-    self.print_paths(paths)
-    input("aggregators finished")
+    # self.print_paths(paths)
+    # input("aggregators finished")
 
     # Filters: Filter each path 
     paths = self.filter_paths(factory_map, start_junction, goal_junction, paths)
-    self.print_paths(paths)
-    input("filters finished")
+    # self.print_paths(paths)
+    # input("filters finished")
 
     # Judges: Select a path proposal
     path  = self.judge_paths(factory_map, start_junction, goal_junction, paths)
+    # input("judge finished")
     return path
 
 
@@ -217,7 +231,8 @@ class PathPlanner:
               .replace("{filter_condition}", filter_condition)
               .replace("{start_junction}",   repr(start_junction.cell))
               .replace("{goal_junction}",    repr(goal_junction.cell))
-              .replace("{path}",             path.format_path()))
+              .replace("{path}",             path.format_path())
+          )
 
         id_to_trace[(path_id, condition_id)] = [util.Message("user", filter_prompt).__dict__]
 
@@ -242,28 +257,44 @@ class PathPlanner:
 
       
   def judge_paths(self, factory_map, start_junction, goal_junction, paths):
+
+    id_to_trace = {}
+
+    for (first_path_id, first_path), (second_path_id, second_path) in \
+      combinations(enumerate(paths), 2):
     
-    judge_prompt = (
-      self.judge_prompt_template
-        .replace("{junctions}",          self.format_junctions(factory_map.junctions))
-        .replace("{roads}",              self.format_roads(factory_map.roads))
-        .replace("{conditions}",         self.format_conditions(factory_map.conditions))
-        .replace("{num_path_proposals}", len(paths))
-        .replace("{start_junction}",     repr(start_junction.cell))
-        .replace("{goal_junction}",      repr(goal_junction.cell))
-      )
+      judge_prompt = (
+        self.judge_prompt_template
+          .replace("{junctions}",          self.format_junctions(factory_map.junctions))
+          .replace("{roads}",              self.format_roads(factory_map.roads))
+          .replace("{conditions}",         self.format_conditions(factory_map.conditions))
+          .replace("{num_path_proposals}", str(len(paths)))
+          .replace("{start_junction}",     repr(start_junction.cell))
+          .replace("{goal_junction}",      repr(goal_junction.cell))
+          .replace("{first_path}",         first_path.format_path())
+          .replace("{second_path}",        second_path.format_path())
+        )
 
+      id_to_trace[(first_path_id, second_path_id)] = [util.Message("user", judge_prompt).__dict__]
 
-    for i, path in enumerate(paths):
+    ensemble_interface    = util.ScalingEnsembleInterface("gpt-4o", PathSelection)
+    id_to_response        = ensemble_interface.evaluate_traces(id_to_trace)
 
-      judge_prompt += f"[SECTION {i+5}: PATH PROPOSAL {i+1}]\n"
-      judge_prompt += path.format_path()
-      judge_prompt += "\n"
+    # for (first_path_id, second_path_id), response in id_to_response.items():
+    #   path_selection = response.parsed
+    #   print(f"Comparing {first_path_id} to {second_path_id}")
+    #   path_selection.print_path_selection()
 
-    traces = [judge_prompt] * len(self.judges)
-    raw_path_proposals = self.proposers.evaluate_traces(traces)
-    return [raw_path_proposal.parsed for raw_path_proposal in raw_path_proposals]
+    scores = [0] * len(paths)
 
+    for (first_path_id, second_path_id), response in id_to_response.items():
+      if   response.parsed.selected_path == 1:
+        scores[first_path_id] += 1
+      elif response.parsed.selected_path == 1:
+        scores[second_path_id] += 1
+
+    best_path_id =  scores.index(max(scores))
+    return paths[best_path_id]
 
   # Formats junctions to be added to a prompt
   def format_junctions(self, junctions):
