@@ -91,6 +91,7 @@ class LLMInterface:
 
     return completion.choices[0].message
 
+
 # Interface to an ensemble of LLMs
 class EnsembleInterface:
 

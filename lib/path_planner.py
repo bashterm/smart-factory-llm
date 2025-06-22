@@ -1,6 +1,9 @@
-import lib.utilities      as util
-from typing               import List, Literal, Optional, Tuple, Union
-from pydantic             import BaseModel
+import lib.utilities as util
+
+from itertools       import product
+from pydantic        import BaseModel
+from typing          import List, Literal, Optional, Tuple, Union
+
 
 # Junction Name Format
 class JunctionName(BaseModel):
@@ -19,7 +22,7 @@ class ConditionEffect(BaseModel):
   condition_effect: str
 
 # Path Proposal Format
-class Path(BaseModel):
+class ProposerPath(BaseModel):
   important_condition_effect: ConditionEffect
   other_conditions_effect: List[ConditionEffect]
   reasoning_steps: List[ReasoningStep]
@@ -31,6 +34,33 @@ class Path(BaseModel):
     proposal_str  = "[SUBSECTION 1: CONDITION EFFECTS]\n"
 
     for i, effect in enumerate([self.important_condition_effect] + self.other_conditions_effect):
+      proposal_str += f"Effect {i+1}: {effect.condition_effect}\n"
+
+    # Format reasoning
+    proposal_str += "[SUBSECTION 2: REASONING]\n"
+
+    for i, reasoning_step in enumerate(self.reasoning_steps):
+      proposal_str += f"Step {i+1}: {reasoning_step.reasoning}\n"
+
+    # Format path
+    proposal_str += "[SUBSECTION 3: PATH]\n"
+    proposal_str += f"{self.path}"
+
+    return proposal_str
+
+
+# Aggregator Format
+class AggregatorPath(BaseModel):
+  conditions_effect: List[ConditionEffect]
+  reasoning_steps: List[ReasoningStep]
+  path: List[JunctionName]
+
+  def format_path(self):
+
+    # Format condition effects
+    proposal_str  = "[SUBSECTION 1: CONDITION EFFECTS]\n"
+
+    for i, effect in enumerate(conditions_effect):
       proposal_str += f"Effect {i+1}: {effect.condition_effect}\n"
 
     # Format reasoning
@@ -59,11 +89,11 @@ class ConditionScore(BaseModel):
 
 class PathPlanner:
 
-  def __init__(self, proposer_model, aggregator_models):
+  def __init__(self, proposer_models, aggregator_models):
     
     # Set up LLMs
-    self.proposers   = util.EnsembleInterface(proposer_models, Path)
-    self.aggregators = util.EnsembleInterface(aggregator_models, Path)
+    self.proposers   = util.EnsembleInterface(proposer_models,   ProposerPath)
+    self.aggregators = util.EnsembleInterface(aggregator_models, AggregatorPath)
 
     # Set up prompts
     with open("prompts/map_proposer_prompt.txt", "r")   as file:
@@ -79,7 +109,6 @@ class PathPlanner:
       self.judge_prompt_template = file.read()
 
 
-
   def plan_junction_path(self, factory_map, start_cell, goal_cell):
 
     # Get start and goal junction
@@ -89,12 +118,18 @@ class PathPlanner:
     
     # Proposers: Generate a series of paths between the start and the goal junctions
     paths = self.propose_paths(factory_map, start_junction, goal_junction)
+    self.print_paths(paths)
+    input("proposers finished")
 
     # Aggregators: Synthesize the proposer's path proposals
     paths = self.aggregate_paths(factory_map, start_junction, goal_junction, paths)
+    self.print_paths(paths)
+    input("aggregators finished")
 
     # Filters: Filter each path 
     paths = self.filter_paths(factory_map, start_junction, goal_junction, paths)
+    self.print_paths(paths)
+    input("filters finished")
 
     # Judges: Select a path proposal
     path  = self.judge_paths(factory_map, start_junction, goal_junction, paths)
@@ -108,12 +143,14 @@ class PathPlanner:
         return road.junction_en
     raise RuntimeError(f"Start cell {start_cell} is not in any road!")
 
+
   # Get the junction at the beginning of the road which contains end_cell
   def get_goal_junction(self, factory_map, goal_cell):
     for road in factory_map.roads:
       if goal_cell in road.path:
         return road.junction_st
     raise RuntimeError(f"Goal cell {goal_cell} is not in any road!")
+
 
   # We ask the proposers to generate paths from the start junction to the goal junction
   def propose_paths(self, factory_map, start_junction, goal_junction):
@@ -134,10 +171,11 @@ class PathPlanner:
             .replace("{goal_junction}",      repr(goal_junction.cell))
         )
 
-      traces.append([util.Message("user", proposer_prompt)])
+      traces.append([util.Message("user", proposer_prompt).__dict__])
 
     raw_path_proposals = self.proposers.evaluate_traces(traces)
     return [raw_path_proposal.parsed for raw_path_proposal in raw_path_proposals]
+
 
   # The aggregators then synthesize the path proposals
   def aggregate_paths(self, factory_map, start_junction, goal_junction, paths):
@@ -147,11 +185,10 @@ class PathPlanner:
         .replace("{junctions}",          self.format_junctions(factory_map.junctions))
         .replace("{roads}",              self.format_roads(factory_map.roads))
         .replace("{conditions}",         self.format_conditions(factory_map.conditions))
-        .replace("{num_path_proposals}", len(paths))
+        .replace("{num_path_proposals}", str(len(paths)))
         .replace("{start_junction}",     repr(start_junction.cell))
         .replace("{goal_junction}",      repr(goal_junction.cell))
       )
-
 
     for i, path in enumerate(paths):
 
@@ -159,18 +196,17 @@ class PathPlanner:
       aggregator_prompt += path.format_path()
       aggregator_prompt += "\n"
 
-    traces = [aggregator_prompt] * len(self.aggregators)
+    traces = [[util.Message("user", aggregator_prompt).__dict__]] * len(self.aggregators.llms)
     raw_path_proposals = self.proposers.evaluate_traces(traces)
     return [raw_path_proposal.parsed for raw_path_proposal in raw_path_proposals]
 
 
-
-  def filter_paths(self, factory_map, start_junction, goal_junction, path_proposals):
+  def filter_paths(self, factory_map, start_junction, goal_junction, paths):
 
     # Generate traces
     id_to_trace = {}
 
-    for proposal_id, path_proposal in enumerate(path_proposals):
+    for path_id, path in enumerate(paths):
       for condition_id, filter_condition in enumerate(factory_map.conditions):
 
         filter_prompt = (
@@ -181,9 +217,9 @@ class PathPlanner:
               .replace("{filter_condition}", filter_condition)
               .replace("{start_junction}",   repr(start_junction.cell))
               .replace("{goal_junction}",    repr(goal_junction.cell))
-              .replace("{path_proposal}",    path_proposal.format_path()))
+              .replace("{path}",             path.format_path()))
 
-        id_to_trace[(proposal_id, condition_id)] = [util.Message("user", filter_prompt)]
+        id_to_trace[(path_id, condition_id)] = [util.Message("user", filter_prompt).__dict__]
 
 
     # Judge traces
@@ -194,18 +230,18 @@ class PathPlanner:
 
 
     # Filter out any proposal which did not satisfy one of the factory conditions
-    filtered_path_proposals = []
-    for proposal_id, path_proposal in enumerate(path_proposals):
+    filtered_paths = []
+    for path_id, path in enumerate(paths):
 
-      if all(condition_score[(proposal_id, condition_id)].score > 40 
+      if all(condition_score[(path_id, condition_id)].score > 40 
              for condition_id in range(len(factory_map.conditions))):
         
-        filtered_path_proposals.append(path_proposal)
+        filtered_paths.append(path)
 
-    return filtered_path_proposals
+    return filtered_paths
 
       
-  def judge_paths(self, factory_map, start_junction, goal_junction, path_proposals):
+  def judge_paths(self, factory_map, start_junction, goal_junction, paths):
     
     judge_prompt = (
       self.judge_prompt_template

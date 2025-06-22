@@ -30,4 +30,4 @@ Use this scoring rubric:
 80 - 100: satisfies the condition parsimoniously.
 
 [SECTION 5: PATH PROPOSAL]
-{path_proposal}
+{path}
