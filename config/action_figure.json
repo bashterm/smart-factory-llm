@@ -1,0 +1,12 @@
+{
+  "machines_path":    "tests/action_figure/machines.json", 
+  "map_path":         "tests/action_figure/map.txt",
+  "procedure_paths":  ["tests/action_figure/procedures/plastic_figure.json",
+                       "tests/action_figure/procedures/plastic_figure_metal_stand.json"],
+  "vis_html":         "visualizer/visualizer/static/vis.html",
+  "vis_lock_timeout": 2,
+  "vis_map":          "tmp/map.json",
+  "vis_state":        "tmp/state.json",
+  "vis_state_lock":   "tmp/state_lock.lock",
+  "plan_path":        "tmp/plan.json"
+}

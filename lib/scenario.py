@@ -15,6 +15,20 @@ class Process:
     self.outputs = Counter(outputs)
     self.runtime = runtime
 
+  def __eq__(self, process):
+    if not isinstance(process, Process):
+      return NotImplemented
+    
+    return (
+          self.runtime == process.runtime
+      and self.inputs  == process.inputs 
+      and self.outputs == process.outputs
+    )
+
+  def to_str_with_pid(self, pid):
+    return f"process {pid}: {dict(self.inputs)} -> {dict(self.outputs)}  (t={self.runtime})"
+
+
 
 # This class describes a manufacturing procedure. It has the following attributes:
 # id. The id of the procedure.
@@ -40,8 +54,8 @@ class Procedure:
   # Prints the procedure's id, tokens and processes
   def print_procedure(self):
     print((f"procedure:{self.id}\ntokens:{self.tokens}"))
-    for pid, proc in self.processes.items():
-      print(f"process {pid}: {dict(proc.inputs)} -> {dict(proc.outputs)}  (t={proc.runtime})")
+    for pid, process in self.processes.items():
+      print(process.to_str_with_pid(pid))
 
 
 # Installations run processes

@@ -12,6 +12,7 @@ import time
 from collections import Counter
 
 from lib.map                import Map
+from lib.coordinator        import Coordinator
 # from lib.build_traffic_plan import BuildTrafficPlan
 
 # interpreter = workstation_interpreter.InterpreterGamma(["gpt-4o", "gpt-4o", "gpt-4o", "gpt-4o"])
@@ -19,15 +20,20 @@ from lib.map                import Map
 # sys.exit()
 
 # (1) Load Config
-config_path = "config/simple_test_II.json"
+config_path = "config/action_figure.json"
 
 with open(config_path) as file:
   config = json.loads(file.read())
 
 
 # (2) Load Factory and Procedures
-procedures = [scenario.Procedure(filepath) for filepath in config["procedure_paths"]]
-procedures = [procedure.print_procedure() for procedure in procedures]
+procedures  = [scenario.Procedure(filepath) for filepath in config["procedure_paths"]]
+# [procedure.print_procedure() for procedure in procedures]
+coordinator = Coordinator(procedures)
+coordinator.print_all_tokens()
+coordinator.print_all_processes()
+
+sys.exit()
 
 installations = scenario.Installations(config["machines_path"])
 installations.print_installations()

@@ -1,0 +1,49 @@
+{
+  "1": {
+    "type":"machine",
+    "input": null,
+    "output": [0,4],
+    "processes": {"retrieve_plank": 1},
+    "label":[1,4]
+  },
+  "2": {
+    "type":"machine",
+    "input": [2,7],
+    "output": [4,7],
+    "processes": {"carve_chassis": 1, "carve_wheel":1},
+    "label":[3,8]
+  },
+  "3": {
+    "type":"machine",
+    "input": [8,7],
+    "output": [10,7],
+    "processes": {"carve_chassis": 1, "carve_wheel":1},
+    "label":[9,8]
+  },
+  "4": {
+    "type":"machine",
+    "input": null,
+    "output": [12,4],
+    "processes": {"retrieve_axel":1},
+    "label":[11,4]
+  },
+  "5": {
+    "type":"machine",
+    "input": [0,2],
+    "output": null,
+    "processes": {"deposit_car": 1},
+    "label":[1,2]
+  },
+  "6": {
+    "type":"workstation",
+    "input": [4,1],
+    "output": [2,1],
+    "label":[3,0]
+  },
+  "7": {
+    "type":"workstation",
+    "input": [10,1],
+    "output": [8,1],
+    "label":[9,0]
+  }
+}

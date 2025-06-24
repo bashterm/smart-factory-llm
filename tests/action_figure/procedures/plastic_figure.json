@@ -1,0 +1,89 @@
+{
+  "id"             : "plastic_figure",
+  "tokens"         : ["raw_plastic_stand", "plastic_stand", "raw_plastic_leg", "plastic_leg", 
+                      "raw_plastic_arm",   "plastic_arm",    "raw_joint",       "joint",
+                      "raw_plastic_head_and_torso", "plastic_head_and_torso", "sticker",
+                      "plastic_figure"],
+  "output_process" : "deposit_plastic_figure",
+  "processes"      : [
+    {
+      "id"      : "print_plastic_stand",
+      "inputs"  : {},
+      "outputs" : {"raw_plastic_stand": 1},
+      "runtime" : 40
+    },
+    {
+      "id"      : "clean_plastic_stand",
+      "inputs"  : {"raw_plastic_stand" : 1},
+      "outputs" : {"plastic_stand"     : 1},
+      "runtime" : 40
+    },
+    {
+      "id"      : "print_plastic_leg",
+      "inputs"  : {},
+      "outputs" : {"raw_plastic_leg" : 1},
+      "runtime" : 40
+    },
+    {
+      "id"      : "clean_plastic_leg",
+      "inputs"  : {"raw_plastic_leg"   : 1},
+      "outputs" : {"plastic_leg"       : 1},
+      "runtime" : 40
+    },
+    {
+      "id"      : "print_plastic_arm",
+      "inputs"  : {},
+      "outputs" : {"raw_plastic_arm"   : 1},
+      "runtime" : 40
+    },
+    {
+      "id"      : "clean_plastic_arm",
+      "inputs"  : {"raw_plastic_arm"   : 1},
+      "outputs" : {"plastic_arm"       : 1},
+      "runtime" : 40
+    },
+    {
+      "id"      : "print_joint",
+      "inputs"  : {},
+      "outputs" : {"raw_joint"         : 1},
+      "runtime" : 40
+    },
+    {
+      "id"      : "clean_joint",
+      "inputs"  : {"raw_joint"         : 1},
+      "outputs" : {"joint"             : 1},
+      "runtime" : 40
+    },
+    {
+      "id"      : "print_plastic_head_and_torso",
+      "inputs"  : {},
+      "outputs" : {"raw_plastic_head_and_torso"         : 1},
+      "runtime" : 40
+    },
+    {
+      "id"      : "clean_plastic_head_and_torso",
+      "inputs"  : {"raw_plastic_head_and_torso"         : 1},
+      "outputs" : {"plastic_head_and_torso"             : 1},
+      "runtime" : 40
+    },
+    {
+      "id"      : "print_sticker",
+      "inputs"  : {},
+      "outputs" : {"sticker"         : 1},
+      "runtime" : 40
+    },
+    {
+      "id"      : "assemble_plastic_figure",
+      "inputs"  : {"plastic_stand" : 1, "plastic_leg" : 1, "plastic_arm" : 1, "joint" : 4, 
+                   "plastic_head_and_torso" : 1, "sticker" : 1},
+      "outputs" : {"plastic_figure" : 1},
+      "runtime" : 40
+    },
+    {
+      "id"      : "deposit_plastic_figure",
+      "inputs"  : {"plastic_figure" : 1},
+      "outputs" : {},
+      "runtime" : 40
+    }
+  ]
+}
