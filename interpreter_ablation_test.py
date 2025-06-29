@@ -3,6 +3,7 @@ import json
 from lib.coordinator             import Coordinator
 from lib.scenario                import Procedure
 from lib.simple_interpreter      import SimpleInterpreter
+from lib.workstation             import Workstation
 from lib.workstation_interpreter import Interpreter
 
 
@@ -17,13 +18,15 @@ with open(llm_config_path) as file:
   llm_config = json.loads(file.read())
 
 
-# (2) Load Procedures and Coordinator
-procedures  = [Procedure(filepath) for filepath in config["procedure_paths"]]
-coordinator = Coordinator(procedures)
+# (2) Load procedures, workstations and coordinator
+procedures   = [Procedure(filepath) for filepath in config["procedure_paths"]]
+workstations = {"w_test":Workstation()}
+coordinator  = Coordinator(procedures, config["to_execute_path"], workstations)
 
 
 # (3) Initialize interpreters
 simple_interpreter = SimpleInterpreter(
+  workstation_id         = "w_test",
   intepreter_llm_model   = "gpt-4o", 
   question_llm_model     = "gpt-4o", 
   coordinator            = coordinator, 
@@ -32,4 +35,4 @@ simple_interpreter = SimpleInterpreter(
 
 
 # (4) Run interpreters
-simple_interpreter.main()
+# simple_interpreter.main()

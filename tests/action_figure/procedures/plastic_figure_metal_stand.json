@@ -15,19 +15,13 @@
     {
       "id"      : "get_metal_rods",
       "inputs"  : {},
-      "outputs" : {"metal_rods": 10},
+      "outputs" : {"metal_rod": 10},
       "runtime" : 40
     },
     {
       "id"      : "CNC_metal_stands",
       "inputs"  : {"metal_plate" : 1},
       "outputs" : {"metal_stand": 10},
-      "runtime" : 40
-    },
-    {
-      "id"      : "clean_plastic_stand",
-      "inputs"  : {"raw_plastic_stand" : 1},
-      "outputs" : {"plastic_stand"     : 1},
       "runtime" : 40
     },
     {

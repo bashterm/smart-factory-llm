@@ -1,9 +1,10 @@
 {
+  "to_execute_path":          "tests/action_figure/to_execute.json",
+  "interpreter_example_path": "tests/action_figure/interpreter_examples.txt",
   "machines_path":            "tests/action_figure/machines.json", 
   "map_path":                 "tests/action_figure/map.txt",
   "procedure_paths":          ["tests/action_figure/procedures/plastic_figure.json",
                                "tests/action_figure/procedures/plastic_figure_metal_stand.json"],
-  "interpreter_example_path": "tests/action_figure/interpreter_examples.txt",
   "vis_html":                 "visualizer/visualizer/static/vis.html",
   "vis_lock_timeout":         2,
   "vis_map":                  "tmp/map.json",

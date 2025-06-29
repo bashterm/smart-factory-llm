@@ -9,6 +9,12 @@ from enum                 import Enum
 from typing               import List, Literal, Optional, Tuple, Union
 from pydantic             import BaseModel
 
+# The possible activity types
+class ActivityType(Enum):
+  SCHEDULE = 1 
+  RUN      = 2
+  FINISH   = 3
+
 # A message in the trace
 class Message:
   def __init__(self, role, content):
@@ -89,12 +95,6 @@ class Interpreter:
   def __init__(self, models, coordinator, examples_filepath, maximum_context_length):
 
     ### Dynamically construct typing schema ###
-
-    # The possible activity types
-    class ActivityType(Enum):
-      SCHEDULE = 1 
-      RUN      = 2
-      FINISH   = 3
 
     all_processes     = coordinator.get_all_processes()
     example_processes = list(all_processes)[:2]
@@ -261,39 +261,6 @@ class Interpreter:
     # Reconvert the most common activity from a tuple to an Activity
     pq = [self.ProcessQuantity(process=p, quantity=q) for p,q in process_quantities]
     return self.Activity(activity_type=activity_type, process_quantities=pq)
-
-
-  def check_activity_feasibility_and_update_state(self, activity):
-
-    process_quantities = Counter({pq.process:pq.quantity for pq in activity.process_quantities})
-
-    if activity.activity_type ==   self.ActivityType.SCHEDULE:
-      self.scheduled += process_quantities
-
-    elif activity.activity_type == self.ActivityType.RUN:
-      if not process_quantities <= self.scheduled:
-        msg = (f"The update runs the multiset of processes {process_quantities}. "
-               f"But the multiset of processes scheduled is {self.scheduled}. "
-               f"You can't run processes that aren't scheduled!")
-        return msg
-
-      self.scheduled -= process_quantities
-      self.running   += process_quantities
-
-    elif activity.activity_type == self.ActivityType.FINISH:
-      if not process_quantities <= self.running:  
-        msg = (f"The update finishes the multiset of processes {process_quantities}. "
-               f"But the multiset of processes running is {self.running}. "
-               f"You can't run finish processes that aren't running!") 
-        return msg
-
-      self.running  -= process_quantities
-      self.finished += process_quantities
-
-    else:
-      raise RuntimeError(f"Did not recognize activity type {activity.activity_type}")
-
-    return None
 
 
   def generate_infeasible_activity_reponse(self):

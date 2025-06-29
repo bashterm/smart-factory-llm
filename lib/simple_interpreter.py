@@ -6,23 +6,17 @@ import tiktoken
 from collections                  import Counter
 from concurrent.futures           import ThreadPoolExecutor
 from enum                         import Enum
-from lib.workstation_interpreter  import Message, Trace
+from lib.workstation_interpreter  import ActivityType, Message, Trace
 from typing                       import List, Literal, Optional, Tuple, Union
 from pydantic                     import BaseModel
 
 
 class SimpleInterpreter:
 
-  def __init__(self, intepreter_llm_model, question_llm_model, coordinator, examples_filepath, 
-               maximum_context_length):
+  def __init__(self, workstation_id, intepreter_llm_model, question_llm_model, coordinator, 
+               examples_filepath, maximum_context_length):
 
     ### Dynamically construct typing schema ###
-
-    # The possible activity types
-    class ActivityType(Enum):
-      SCHEDULE = 1 
-      RUN      = 2
-      FINISH   = 3
 
     all_processes     = coordinator.get_all_processes()
     example_processes = list(all_processes)[:2]
@@ -57,42 +51,36 @@ class SimpleInterpreter:
     self.ProcessQuantity = ProcessQuantity
 
     # Initialize interpreter
+    self.workstation_id  = workstation_id
     self.interpreter_llm = ut.LLMInterface(intepreter_llm_model, Response)
     self.question_llm    = ut.LLMInterface(question_llm_model,   Question)
     self.trace           = Trace(maximum_context_length)
 
-    # Load and construct prompts
+    # Store a handle to the coordinator
+    self.coordinator     = coordinator
+
+    # Load and construct prompt
     with open(examples_filepath, "r") as file:
       examples = file.read()
 
     with open("prompts/interpreter_prompt3.txt", "r") as file:
-      self.interpreter_prompt = Message("system", file.read())
 
-      # prompt = (file.read().replace("<processes>",        ", ".join(all_processes))
-      #                      .replace("<example_process1>", example_processes[0])
-      #                      .replace("<example_process2>", example_processes[1])
-      #                      .replace("<examples>", examples))
+      prompt = (file.read().replace("<processes>",        ", ".join(all_processes))
+                           .replace("<example_process1>", example_processes[0])
+                           .replace("<example_process2>", example_processes[1])
+                           .replace("<examples>", examples))
 
-      # self.interpreter_prompt = Message("system", prompt)
+      self.interpreter_prompt = Message("system", prompt)
 
-    # Load user messsage
-    self.default_user_msg = ">"
-
-    # Initialize workstation state
-    self.scheduled = Counter()
-    self.running   = Counter()
-    self.finished  = Counter()
-
+      input(f"self.interpreter_prompt:{self.interpreter_prompt}")
 
   def main(self):
-
-    user_msg = self.default_user_msg
 
     while True:
 
       # 1) Get reponse from user
       self.trace.print_trace()
-      self.get_response_from_user(user_msg)
+      self.get_response_from_user()
 
       # 2) Generate an response to the current trace
       response = self.interpret_trace()
@@ -122,7 +110,7 @@ class SimpleInterpreter:
         self.trace.store_message(Message("user", response.question))
 
           
-  def get_response_from_user(self, user_msg: str) -> None:
+  def get_response_from_user(self):
     from_user = input("> ")
     self.trace.store_message(Message("user", from_user))
 
@@ -137,36 +125,3 @@ class SimpleInterpreter:
     to_send    = [self.interpreter_prompt.__dict__] + self.trace.truncated_formatted_trace()
     response   = self.interpreter_llm.evaluate_trace(to_send).parsed.root
     return response
-
-
-  def check_activity_feasibility_and_update_state(self, activity):
-
-    process_quantities = Counter({pq.process:pq.quantity for pq in activity.process_quantities})
-
-    if activity.activity_type ==   self.ActivityType.SCHEDULE:
-      self.scheduled += process_quantities
-
-    elif activity.activity_type == self.ActivityType.RUN:
-      if not process_quantities <= self.scheduled:
-        msg = (f"The update runs the multiset of processes {process_quantities}. "
-               f"But the multiset of processes scheduled is {self.scheduled}. "
-               f"You can't run processes that aren't scheduled!")
-        return msg
-
-      self.scheduled -= process_quantities
-      self.running   += process_quantities
-
-    elif activity.activity_type == self.ActivityType.FINISH:
-      if not process_quantities <= self.running:  
-        msg = (f"The update finishes the multiset of processes {process_quantities}. "
-               f"But the multiset of processes running is {self.running}. "
-               f"You can't run finish processes that aren't running!") 
-        return msg
-
-      self.running  -= process_quantities
-      self.finished += process_quantities
-
-    else:
-      raise RuntimeError(f"Did not recognize activity type {activity.activity_type}")
-
-    return None
