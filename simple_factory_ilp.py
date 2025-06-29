@@ -20,10 +20,14 @@ from lib.coordinator        import Coordinator
 # sys.exit()
 
 # (1) Load Config
-config_path = "config/action_figure.json"
+config_path     = "config/action_figure.json"
+llm_config_path = "config/llm_config.json"
 
 with open(config_path) as file:
   config = json.loads(file.read())
+
+with open(llm_config_path) as file:
+  llm_config = json.loads(file.read())
 
 
 # (2) Load Factory and Procedures
@@ -32,6 +36,12 @@ procedures  = [scenario.Procedure(filepath) for filepath in config["procedure_pa
 coordinator = Coordinator(procedures)
 coordinator.print_all_tokens()
 coordinator.print_all_processes()
+
+intepreter_examples_filepath = config["interpreter_example_path"]
+interpreter = workstation_interpreter.Interpreter(
+  ["gpt-4o"] * 4, coordinator, intepreter_examples_filepath, llm_config["maximum_context_length"])
+
+interpreter.main()
 
 sys.exit()
 

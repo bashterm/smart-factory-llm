@@ -1,0 +1,17 @@
+User: Began printing a stand.
+You: {root:{activity_type:RUN, multiset_of_processes:{print_plastic_stand:1}}}
+User: system - valid
+
+User: I'm planning on assembling some plastic figures.
+You: {root:{question:"How many plastic figures are you planning on assembling?"}}
+User: three
+You: {root:{activity_type:'SCHEDULE', multiset_of_processes:{{assemble_plastic_figure:3}}}}
+User: system - valid
+
+User: Finished cleaning 4 plastic arms.
+You: {root:{activity_type:"FINISH", multiset_of_processes:{clean_plastic_arm:4}}}
+User: system - invalid: there are only three clean_plastic_arm processes running.
+You: {root:{question:"There are only three clean_plastic_arm processes running. Are you sure that you cleaned 4 plastic arms?"}}
+User: Sorry, I meant 3, mistyped.
+You: {root:{activity_type:"FINISH", multiset_of_processes:{clean_plastic_arm:3}}}
+User: system - valid
