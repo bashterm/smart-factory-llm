@@ -37,9 +37,11 @@ coordinator = Coordinator(procedures)
 coordinator.print_all_tokens()
 coordinator.print_all_processes()
 
-intepreter_examples_filepath = config["interpreter_example_path"]
 interpreter = workstation_interpreter.Interpreter(
-  ["gpt-4o"] * 4, coordinator, intepreter_examples_filepath, llm_config["maximum_context_length"])
+  llm_config["interpreter_ensemble"], 
+  coordinator, 
+  config["interpreter_example_path"], 
+  llm_config["maximum_context_length"])
 
 interpreter.main()
 
