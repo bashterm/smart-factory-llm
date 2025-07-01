@@ -35,4 +35,4 @@ simple_interpreter = SimpleInterpreter(
 
 
 # (4) Run interpreters
-# simple_interpreter.main()
+simple_interpreter.main()

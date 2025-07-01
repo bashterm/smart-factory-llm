@@ -51,7 +51,7 @@ class ProposerPath(BaseModel):
 
 
 # Aggregator Format
-class AggregatorPath(BaseModel):
+class PathProposal(BaseModel):
   conditions_effect: List[ConditionEffect]
   reasoning_steps: List[ReasoningStep]
   path: List[JunctionName]
@@ -61,7 +61,7 @@ class AggregatorPath(BaseModel):
     # Format condition effects
     proposal_str  = "[SUBSECTION 1: CONDITION EFFECTS]\n"
 
-    for i, effect in enumerate(conditions_effect):
+    for i, effect in enumerate(self.conditions_effect):
       proposal_str += f"Effect {i+1}: {effect.condition_effect}\n"
 
     # Format reasoning

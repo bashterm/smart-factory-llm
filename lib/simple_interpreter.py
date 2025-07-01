@@ -51,7 +51,7 @@ class SimpleInterpreter:
     self.ProcessQuantity = ProcessQuantity
 
     # Initialize interpreter
-    self.workstation_id  = workstation_id
+    self.id              = workstation_id
     self.interpreter_llm = ut.LLMInterface(intepreter_llm_model, Response)
     self.question_llm    = ut.LLMInterface(question_llm_model,   Question)
     self.trace           = Trace(maximum_context_length)
@@ -72,7 +72,7 @@ class SimpleInterpreter:
 
       self.interpreter_prompt = Message("system", prompt)
 
-      input(f"self.interpreter_prompt:{self.interpreter_prompt}")
+      # input(f"self.interpreter_prompt:{self.interpreter_prompt}")
 
   def main(self):
 
@@ -94,7 +94,7 @@ class SimpleInterpreter:
       #    d) If it is not feasible, generate a clarifying question for the user
       if isinstance(response, self.Activity):
         self.trace.store_message(Message("assistant", str(response)))
-        err_msg = self.check_activity_feasibility_and_update_state(response)
+        err_msg = self.coordinator.check_activity_feasibility_and_update_state(self.id, response)
 
         if err_msg:
           self.trace.store_message(Message("user", f"system - invalid:{err_msg}"))

@@ -71,10 +71,11 @@ class Coordinator:
     return required_processes
 
 
-      
-
-
-    
+  # Checks whether its feasible for the workstaiton workstation_id to perform an activity.
+  # If it is, the workstation workstation_id updates its state and we returns None.
+  # If it isn't, the workstation doesn't update its state and we return an error message 
+  def check_activity_feasibility_and_update_state(self, workstation_id, activity):
+    return self.workstations[workstation_id].check_activity_feasibility_and_update_state(activity)
 
 
   # Gets the set of all processes in the procedures

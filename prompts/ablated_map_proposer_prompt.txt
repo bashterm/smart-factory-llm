@@ -1,0 +1,23 @@
+[SECTION 1: BACKGROUND]
+You are an AI directing a robot in a smart factory. Robots carry materials to and between machines following a traffic system. Your job is to help the robot navigate the traffic system.
+
+[SECTION 2: TRAFFIC SYSTEM]
+-- A traffic system is modeled as a directed graph. 
+-- Each vertex is a junction: a point (x, y) on the factory floor. 
+-- Each directed edge (x_st,y_st)->(x_en,y_en) is a one way road which runs from a start junction (x_st,y_st) to an end junction (x_en,y_en).
+-- The traffic system in your smart factory is:
+junctions: <junctions>
+roads: <roads>
+
+[SECTION 3: CURRENT TRAFFIC SYSTEM CONDITIONS]
+<conditions>
+
+[SECTION 4: YOUR TASK]
+-- Find a path from the start junction <start_junction> to the goal junction <goal_junction>.
+-- First, describe how each traffic system condition impacts path cost and feasibility.
+-- Second, describe the step by step reasoning that you used to generate your path.
+-- Third, describe your path itself.
+
+-- Your first  priority: finding a valid path.
+-- Your second priority: finding a path that respects the traffic system conditions.
+-- Your third priority: finding a path that is a short as possible.
