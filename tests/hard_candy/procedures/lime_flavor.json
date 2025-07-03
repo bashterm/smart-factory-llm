@@ -1,0 +1,67 @@
+{
+  "tokens": ["Sugar", 
+             "Glucose_Syrup", 
+             "Boiled_Syrup", 
+             "Vaccuum_Processed", 
+             "Coloring (Green)",
+             "Flavoring (Lime)",
+             "Mixed_Syrup",
+             "Candy"],
+  "output_process": "Packaging",
+  "processes": [
+    {
+      "id":    "Sugar_In",
+      "inputs":  [],
+      "outputs": ["Sugar"],
+      "runtime": 10
+    },
+    {
+      "id":    "Glucose_Syrup_In",
+      "inputs":  [],
+      "outputs": ["Glucose_Syrup"],
+      "runtime": 10
+    },
+    {
+      "id":    "Green_Coloring_In",
+      "inputs":  [],
+      "outputs": ["Coloring (Green)"],
+      "runtime": 10
+    },
+    {
+      "id":    "Lime_Flavoring_In",
+      "inputs":  [],
+      "outputs": ["Flavoring (Lime)"],
+      "runtime": 10
+    },
+    {
+      "id":   "Boiling",
+      "inputs":  ["Sugar", "Glucose_Syrup"],
+      "outputs": ["Boiled_Syrup"],
+      "runtime": 40
+    },
+    {
+      "id":    "Vaccuum",
+      "inputs":  ["Boiled_Syrup"],
+      "outputs": ["Vaccuum_Processed"],
+      "runtime": 40
+    },
+    {
+      "id":    "Mixing",
+      "inputs":  ["Vaccuum_Processed", "Coloring (Green)", "Flavoring (Lime)"],
+      "outputs": ["Mixed_Syrup"],
+      "runtime": 30
+    },
+    {
+      "id":    "Cooling",
+      "inputs":  ["Mixed_Syrup"],
+      "outputs": ["Candy"],
+      "runtime": 40
+    },
+    {
+      "id":    "Packaging",
+      "inputs":  ["Candy"],
+      "outputs": [],
+      "runtime": 20
+    }
+  ]
+}

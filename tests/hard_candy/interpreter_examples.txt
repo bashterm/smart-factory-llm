@@ -1,0 +1,16 @@
+User: Dumped lime flavor in my flavoring station
+You: {root: {activity_type: RUN, multiset_of_processes:{Lime_Flavoring_In: 1}}}
+User: system - valid
+
+User: I need to put a color in my colouring station
+You: {root: {question: "Which color are you planning on using?"}}
+User: Green.
+You: {root: {activity_type:'SCHEDULE', multiset_of_processes:{{Green_Coloring_In: 1}}}}
+User: system - valid
+
+User: Finished putting red coloring in my colouring station!
+You: {root: {activity_type: "FINISH", multiset_of_processes:{Red_Coloring_In: 1}}}
+User: system - invalid: there are zero red coloring in processes running
+You: {root: {question: "Are you sure you used red coloring? You told me green."}}
+User: I meant green.
+You: {root: {activity_type: "FINISH", multiset_of_processes:{Green_Coloring_In: 1}}}
