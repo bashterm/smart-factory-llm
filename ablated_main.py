@@ -1,10 +1,10 @@
 import json
 
 from lib.coordinator          import Coordinator
+from lib.installations        import 
 from lib.map                  import Map
 from lib.scenario             import Installations, Procedure
 from lib.simple_interpreter   import SimpleInterpreter
-from lib.workstation          import Workstation
 from lib.visualizer           import Visualizer
 
 class SmartFactorySystem:
@@ -21,11 +21,8 @@ class SmartFactorySystem:
     # (2) Load procedures
     self.procedures    = [Procedure(filepath) for filepath in config["procedure_paths"]]
 
-    # (3) Load 
-
-    # (2) Load installations and factory map
-    self.installations = Installations(config["installations_path"])
-    self.installations.print_installations()
+    # (3) Load machines, workstations and factory map
+    self.machines, self.workstations = build_installations(config["installations_path"])
 
     self.factory_map   = Map(config["factory_map_path"], self.installations)
     self.factory_map.visualize()
