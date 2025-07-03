@@ -7,7 +7,7 @@ import lib.utilities   as util
 
 class Visualizer:
 
-  def __init__(self, factory_map, installations, num_agents, prefix=""):
+  def __init__(self, factory_map, workstations, machines, num_agents, prefix=""):
 
     self.ncols               = factory_map.ncols
     self.nrows               = factory_map.nrows
@@ -33,8 +33,8 @@ class Visualizer:
       self.set_pt(cell, "#")
 
     # Installation information
-    i_map = copy(installations.workstations)
-    i_map.update(installations.machines)
+    i_map = copy(workstations)
+    i_map.update(machines)
 
     self.i_input  = {xid:x.input_cell.to_tuple()  for xid,x in i_map.items() if x.input_cell}
     self.i_output = {xid:x.output_cell.to_tuple() for xid,x in i_map.items() if x.output_cell}

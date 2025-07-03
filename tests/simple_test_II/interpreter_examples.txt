@@ -1,0 +1,17 @@
+User: Began carving a chassises.
+You: {root:{activity_type:RUN, multiset_of_processes:{carve_chassis:1}}}
+User: system - valid
+
+User: I'm planning on carving some wheels.
+You: {root:{question:"How many wheels are you planning on carving?"}}
+User: three
+You: {root:{activity_type:'SCHEDULE', multiset_of_processes:{{carve_wheels:3}}}}
+User: system - valid
+
+User: Finished making four toy cars.
+You: {root:{activity_type:"FINISH", multiset_of_processes:{assemble_toy_car:4}}}
+User: system - invalid: there are only three assemble_toy_car processes running.
+You: {root:{question:"There are only 3 assemble_toy_car processes running. Are you sure that you assembled 4 toy cars?"}}
+User: Sorry, I meant 3, mistyped.
+You: {root:{activity_type:"FINISH", multiset_of_processes:{assemble_toy_car:3}}}
+User: system - valid

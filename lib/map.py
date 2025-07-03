@@ -10,7 +10,7 @@ import networkx             as     nx
 
 class Map():
 
-  def __init__(self, path, installations):
+  def __init__(self, path):
 
     # (1) Load Map
     with open(path) as file:

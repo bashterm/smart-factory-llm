@@ -13,12 +13,12 @@ from pydantic                     import BaseModel
 
 class SimpleInterpreter:
 
-  def __init__(self, workstation_id, intepreter_llm_model, question_llm_model, coordinator, 
-               examples_filepath, maximum_context_length):
+  def __init__(self, intepreter_llm_model, question_llm_model, procedures, examples_filepath, 
+               maximum_context_length, workstation_id, workstation):
 
     ### Dynamically construct typing schema ###
 
-    all_processes     = coordinator.get_all_processes()
+    all_processes     = procedures.get_all_processes()
     example_processes = list(all_processes)[:2]
     ProcessListEnum   = Enum("ProcessListEnum", {item:item for item in all_processes})
 
@@ -35,7 +35,9 @@ class SimpleInterpreter:
       # Convert this class into a hashable tuple key of the form:
       # (activity_type, ((process, quantity), (process, quantity), ...))
       def to_tuple(self):
-        process_quantities_tup = tuple((pq.process, pq.quantity) for pq in self.process_quantities)
+        process_quantities_tup = (
+          tuple((pq.process.value, pq.quantity) for pq in self.process_quantities))
+        
         return (self.activity_type, process_quantities_tup)
 
     # When we need more information, we ask a question
@@ -51,13 +53,11 @@ class SimpleInterpreter:
     self.ProcessQuantity = ProcessQuantity
 
     # Initialize interpreter
-    self.id              = workstation_id
+    self.workstation_id  = workstation_id
+    self.workstation     = workstation
     self.interpreter_llm = ut.LLMInterface(intepreter_llm_model, Response)
     self.question_llm    = ut.LLMInterface(question_llm_model,   Question)
     self.trace           = Trace(maximum_context_length)
-
-    # Store a handle to the coordinator
-    self.coordinator     = coordinator
 
     # Load and construct prompt
     with open(examples_filepath, "r") as file:
@@ -72,9 +72,8 @@ class SimpleInterpreter:
 
       self.interpreter_prompt = Message("system", prompt)
 
-      # input(f"self.interpreter_prompt:{self.interpreter_prompt}")
 
-  def main(self):
+  def get_update(self, coordinator):
 
     while True:
 
@@ -89,12 +88,12 @@ class SimpleInterpreter:
       # 3) If the reponse is an activity: 
       #    a) Add it to the trace
       #    b) Check if it is feasible, given the current workstation state
-      #    c) If it is feasible, add the feasibility message to the trace and await the next 
-      #       update message from the user.
+      #    c) If it is feasible, add the feasibility message to the trace and end interpreter 
+      #       session.
       #    d) If it is not feasible, generate a clarifying question for the user
       if isinstance(response, self.Activity):
         self.trace.store_message(Message("assistant", str(response)))
-        err_msg = self.coordinator.check_activity_feasibility_and_update_state(self.id, response)
+        err_msg = self.workstation.check_activity_feasibility_and_update(coordinator, response)
 
         if err_msg:
           self.trace.store_message(Message("user", f"system - invalid:{err_msg}"))
@@ -103,6 +102,7 @@ class SimpleInterpreter:
 
         else:
           self.trace.store_message(Message("user", f"system - valid"))
+          return
 
       # 4) If the response is a question, add it to the trace and await the next message from the
       #    user.
@@ -111,7 +111,7 @@ class SimpleInterpreter:
 
           
   def get_response_from_user(self):
-    from_user = input("> ")
+    from_user = input(f"Workstation {self.workstation_id} > ")
     self.trace.store_message(Message("user", from_user))
 
 

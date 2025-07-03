@@ -6,13 +6,13 @@
     {
       "id"      : "retrieve_plank",
       "inputs"  : {},
-      "outputs" : {"plank": 2},
+      "outputs" : {"plank": 1},
       "runtime" : 1
     },
     {
       "id"      : "retrieve_axel",
       "inputs"  : {},
-      "outputs" : {"axel": 8},
+      "outputs" : {"axel": 1},
       "runtime" : 1
     },
     {
@@ -24,12 +24,12 @@
     {
       "id"      : "carve_wheels",
       "inputs"  : {"plank": 1},
-      "outputs" : {"wheel": 4},
+      "outputs" : {"wheel": 1},
       "runtime" : 1
     },
     {
-      "id"      : "assemble_car",
-      "inputs"  : {"plank": 1, "wheel": 4, "axel":2},
+      "id"      : "assemble_toy_car",
+      "inputs"  : {"chassis": 1, "wheel": 4, "axel":2},
       "outputs" : {"car": 1},
       "runtime" : 1
     },

@@ -1,5 +1,9 @@
+import json
+import lib.utilities             as     util
+
 from collections                 import Counter
 from lib.workstation_interpreter import ActivityType
+
 
 # Installations run processes
 class Installation:
@@ -49,12 +53,22 @@ class Workstation(Installation):
     super().__init__(description)
 
 
-  def check_activity_feasibility_and_update_state(self, activity):
+  def check_activity_feasibility_and_update(self, coordinator, activity):
 
-    process_quantities = Counter({pq.process : pq.quantity for pq in activity.process_quantities})
+    process_quantities = Counter({pq.process.value : pq.quantity 
+                                  for pq in activity.process_quantities})
+    coordinator.print_unassigned_processes()
+
 
     if activity.activity_type   == ActivityType.SCHEDULE:
-      self.scheduled += process_quantities
+      if not process_quantities <= coordinator.unassigned:
+        msg = (f"The update schedules the multiset of processes {process_quantities}. "
+               f"But the multiset of processes which still need to be scheduled is "
+               f"{coordinator.unassigned}. You can't schedule unnecessary processes!")
+        return msg
+
+      coordinator.unassigned -= process_quantities
+      self.scheduled         += process_quantities
 
     elif activity.activity_type == ActivityType.RUN:
       if not process_quantities <= self.scheduled:
@@ -94,10 +108,17 @@ def build_installations(path):
   # Load each installation
   for installation_id, description in installation_descriptions.items():
     if   description["type"] == "machine":
-      self.machines[installation_id] = Machine(description)
+      machines[installation_id] = Machine(description)
     elif description["type"] == "workstation":
-      self.workstations[installation_id] = Workstation(description)
+      workstations[installation_id] = Workstation(description)
     else:
       raise RuntimeError(f"Did not recognize installation type:{description['type']}")
 
   return machines, workstations
+
+
+def print_installations(machines, workstations):
+  for mid, machine in machines.items():
+    print(f"Machine {mid}: {repr(machine)}")
+  for wid, workstation in workstations.items():
+    print(f"Workstation {wid}: {repr(workstation)}")
