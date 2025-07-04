@@ -1,0 +1,42 @@
+{
+  "tokens": [ "rod", "button", "rough_pwr_plus_two_cl", "pwr_plus_two_cl", "hyd_pwr_plus_two_cl"],
+  "output_process" : "package",
+  "processes": [
+    {
+      "id": "retrieve_rod",
+      "inputs": [],
+      "outputs": ["rod"],
+      "runtime": 10
+    },
+    {
+      "id": "cutting",
+      "inputs": ["rod"],
+      "outputs": ["button"],
+      "runtime": 20
+    },
+    {
+      "id": "mould_on_lathe_pwr_plus_two",
+      "inputs": ["button"],
+      "outputs": ["rough_pwr_plus_two_cl"],
+      "runtime":20
+    },
+    {
+      "id": "polish",
+      "inputs": ["rough_pwr_plus_two_cl"],
+      "outputs": ["pwr_plus_two_cl"],
+      "runtime": 40
+    },
+    {
+      "id": "hydrate",
+      "inputs": ["pwr_plus_two_cl"],
+      "outputs": ["hyd_pwr_plus_two_cl"],
+      "runtime": 40
+    },
+    {
+      "id": "package",
+      "inputs": ["hyd_pwr_plus_two_cl"],
+      "outputs": [],
+      "runtime": 20
+    }
+  ]
+}
